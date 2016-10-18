@@ -47,6 +47,7 @@ class samba::classic(
   $sambaloglevel        = 1,
   $join_domain          = true,
   $manage_winbind       = true,
+  $manage_samba         = true,
   $krbconf              = true,
   $nsswitch             = true,
   $sambaclassloglevel   = undef,
@@ -146,11 +147,14 @@ class samba::classic(
     Package['SambaClassicWinBind'] -> Package['SambaClassic']
   }
 
-  service{ 'SambaSmb':
+  if $manage_samba {
+    service{ 'SambaSmb':
     ensure  => 'running',
     name    => $::samba::params::servivesmb,
     require => [ Package['SambaClassic'], File['SambaOptsFile'] ],
+    }
   }
+  
 
   if $manage_winbind {
     service{ 'SambaWinBind':
@@ -200,18 +204,22 @@ class samba::classic(
       'map untrusted to domain'            => 'Yes',
     }
   }
-
-  file{ 'SambaCreateHome':
-    path   => $::samba::params::sambacreatehome,
-    source => "puppet:///modules/${module_name}/smb-create-home.sh",
-    mode   => '0755',
+  if $manage_samba {
+    file{ 'SambaCreateHome':
+      path   => $::samba::params::sambacreatehome,
+      source => "puppet:///modules/${module_name}/smb-create-home.sh",
+      mode   => '0755',
+    }
   }
 
   $mandatoryglobaloptionsindex = prefix(keys($mandatoryglobaloptions),
     '[global]')
 
-  if $manage_winbind {
+  if $manage_winbind and $manage_samba {
     $services_to_notify = ['SambaSmb', 'SambaWinBind']
+  }
+  else {
+    $services_to_notify = ['SambaWinBind']
   }
   else {
     $services_to_notify = ['SambaSmb']
