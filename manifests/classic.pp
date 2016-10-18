@@ -154,6 +154,12 @@ class samba::classic(
     require => [ Package['SambaClassic'], File['SambaOptsFile'] ],
   }
   
+  service{ 'SambaNmb':
+    ensure  => $ensure_samba,
+    enable  => $ensure_samba,
+    name    => $::samba::params::servivenmb,
+    require => [ Package['SambaClassic'], File['SambaOptsFile'] ],
+  }
 
   if $manage_winbind {
     service{ 'SambaWinBind':
