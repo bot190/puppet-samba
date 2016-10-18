@@ -149,7 +149,7 @@ class samba::classic(
 
   service{ 'SambaSmb':
     ensure  => $ensure_samba,
-    enable => $ensure_samba,
+    enable  => $ensure_samba,
     name    => $::samba::params::servivesmb,
     require => [ Package['SambaClassic'], File['SambaOptsFile'] ],
   }
@@ -217,7 +217,7 @@ class samba::classic(
   if $manage_winbind and $ensure_samba {
     $services_to_notify = ['SambaSmb', 'SambaWinBind']
   }
-  else {
+  else if $manage_winbind {
     $services_to_notify = ['SambaWinBind']
   }
   else {
